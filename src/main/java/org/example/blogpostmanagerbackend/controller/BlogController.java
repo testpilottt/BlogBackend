@@ -18,10 +18,10 @@ public class BlogController {
     @Autowired
     private BlogService blogService;
 
-    @GetMapping("/getAllBlogs")
-    public ResponseEntity<?> getCountrySettings() {
+    @GetMapping("/getBlogsByPagination/{page}")
+    public ResponseEntity<?> getCountrySettings(@PathVariable("page") int page) {
         try {
-            List<Blog> blogs = blogService.getAllBlogs();
+            List<Blog> blogs = blogService.getBlogsByPagination(page);
             return new ResponseEntity<>(blogs, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Error in getting all blogs", e);
@@ -30,7 +30,7 @@ public class BlogController {
     }
 
     @PostMapping("/createBlog")
-    public ResponseEntity<String> createBlog(Blog blogRequest) {
+    public ResponseEntity<String> createBlog(@RequestBody Blog blogRequest) {
         try {
             BlogResponse blogResponse = blogService.createBlog(blogRequest);
             return new ResponseEntity<>(blogResponse.getMessage(), blogResponse.getHttpStatus());

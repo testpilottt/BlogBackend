@@ -11,9 +11,12 @@ public interface BlogService {
 
     BlogResponse createBlog(Blog blogRequest);
 
+    //Aware that it is unused
     List<Blog> getAllBlogs();
 
     BlogResponse updateBlog(Blog blogRequest);
 
     BlogResponse deleteBlog(Long blogId);
+
+    List<Blog> getBlogsByPagination(int page);
 }

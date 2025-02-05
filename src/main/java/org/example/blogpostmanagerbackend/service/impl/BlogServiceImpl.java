@@ -5,6 +5,8 @@ import org.example.blogpostmanagerbackend.payloads.response.BlogResponse;
 import org.example.blogpostmanagerbackend.repository.BlogTableRepository;
 import org.example.blogpostmanagerbackend.service.BlogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,8 @@ import java.util.Optional;
 @Transactional
 @Component
 public class BlogServiceImpl implements BlogService {
+    private static final int BLOG_PAGE_SIZE = 10;
+
     @Autowired
     private BlogTableRepository blogTableRepository;
 
@@ -61,5 +65,10 @@ public class BlogServiceImpl implements BlogService {
             return new BlogResponse(HttpStatus.OK, "Blog Deleted Successfully");
         }
         return new BlogResponse(HttpStatus.NOT_FOUND, "Blog with id " + blogId + " was not found in database.");
+    }
+
+    public List<Blog> getBlogsByPagination(int page) {
+        Pageable pageable = PageRequest.of(page, BLOG_PAGE_SIZE);
+        return blogTableRepository.findAll(pageable).getContent();
     }
 }

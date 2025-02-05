@@ -16,7 +16,7 @@ public class Blog {
     @GeneratedValue
     private Long blogId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "authorId")
     private Author author;
 
