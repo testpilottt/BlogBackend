@@ -1,10 +1,13 @@
 package org.example.blogpostmanagerbackend.service.impl;
 
+import org.example.blogpostmanagerbackend.entities.Author;
 import org.example.blogpostmanagerbackend.entities.Blog;
 import org.example.blogpostmanagerbackend.payloads.response.BlogResponse;
+import org.example.blogpostmanagerbackend.repository.AuthorTableRepository;
 import org.example.blogpostmanagerbackend.repository.BlogTableRepository;
 import org.example.blogpostmanagerbackend.service.BlogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,10 +20,16 @@ import java.util.Optional;
 @Transactional
 @Component
 public class BlogServiceImpl implements BlogService {
-    private static final int BLOG_PAGE_SIZE = 10;
+    private static final int BLOG_PAGE_SIZE = 12;
+
+    private final BlogTableRepository blogTableRepository;
+    private final AuthorTableRepository authorTableRepository;
 
     @Autowired
-    private BlogTableRepository blogTableRepository;
+    public BlogServiceImpl(BlogTableRepository blogTableRepository, AuthorTableRepository authorTableRepository) {
+        this.blogTableRepository = blogTableRepository;
+        this.authorTableRepository = authorTableRepository;
+    }
 
     @Override
     public BlogResponse createBlog(Blog blogRequest) {
@@ -28,12 +37,13 @@ public class BlogServiceImpl implements BlogService {
             return new BlogResponse(HttpStatus.CONFLICT, "Blog title already exists (Not Unique)");
         }
 
-        Blog blog = new Blog();
-        blog.setTitle(blogRequest.getTitle());
-        blog.setDescription(blogRequest.getDescription());
-        blog.setAuthor(blogRequest.getAuthor());
-        blog.setFullBlogText(blogRequest.getFullBlogText());
-        blogTableRepository.save(blog);
+        //Create author if he does not exist
+        Author author = blogRequest.getAuthor();
+        if (author != null && author.getAuthorId() == null) {
+            authorTableRepository.save(author);
+        }
+
+        blogTableRepository.save(mapBlog(blogRequest, new Blog()));
         return new BlogResponse(HttpStatus.CREATED, "New Blog Created Successfully");
     }
 
@@ -48,12 +58,9 @@ public class BlogServiceImpl implements BlogService {
         if (blog.isEmpty()) {
             return new BlogResponse(HttpStatus.NOT_FOUND, "Blog with id " + blogRequest.getBlogId() + " was not found to be updated.");
         }
-        Blog blogToUpdate = blog.get();
-        blogToUpdate.setFullBlogText(blogRequest.getFullBlogText());
-        blogToUpdate.setDescription(blogRequest.getDescription());
-        blogToUpdate.setAuthor(blogRequest.getAuthor());
-        blogToUpdate.setTitle(blogRequest.getTitle());
-        blogTableRepository.save(blogToUpdate);
+
+        authorTableRepository.save(blogRequest.getAuthor());
+        blogTableRepository.save(mapBlog(blogRequest, blog.get()));
         return new BlogResponse(HttpStatus.OK, "New Blog Updated Successfully");
     }
 
@@ -67,8 +74,16 @@ public class BlogServiceImpl implements BlogService {
         return new BlogResponse(HttpStatus.NOT_FOUND, "Blog with id " + blogId + " was not found in database.");
     }
 
-    public List<Blog> getBlogsByPagination(int page) {
+    public Page<Blog> getBlogsByPagination(int page) {
         Pageable pageable = PageRequest.of(page, BLOG_PAGE_SIZE);
-        return blogTableRepository.findAll(pageable).getContent();
+        return blogTableRepository.findAll(pageable);
+    }
+
+    private Blog mapBlog(Blog sourceBlog, Blog targetBlog) {
+        targetBlog.setFullBlogText(sourceBlog.getFullBlogText());
+        targetBlog.setDescription(sourceBlog.getDescription());
+        targetBlog.setAuthor(sourceBlog.getAuthor());
+        targetBlog.setTitle(sourceBlog.getTitle());
+        return targetBlog;
     }
 }

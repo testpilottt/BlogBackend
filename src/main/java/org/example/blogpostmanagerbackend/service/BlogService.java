@@ -2,6 +2,7 @@ package org.example.blogpostmanagerbackend.service;
 
 import org.example.blogpostmanagerbackend.entities.Blog;
 import org.example.blogpostmanagerbackend.payloads.response.BlogResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,5 +19,5 @@ public interface BlogService {
 
     BlogResponse deleteBlog(Long blogId);
 
-    List<Blog> getBlogsByPagination(int page);
+    Page<Blog> getBlogsByPagination(int page);
 }

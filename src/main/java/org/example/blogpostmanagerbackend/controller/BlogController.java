@@ -5,23 +5,28 @@ import org.example.blogpostmanagerbackend.entities.Blog;
 import org.example.blogpostmanagerbackend.payloads.response.BlogResponse;
 import org.example.blogpostmanagerbackend.service.BlogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/blog")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @Slf4j
 public class BlogController {
+
+    private final BlogService blogService;
+
     @Autowired
-    private BlogService blogService;
+    public BlogController(BlogService blogService) {
+        this.blogService = blogService;
+    }
 
     @GetMapping("/getBlogsByPagination/{page}")
-    public ResponseEntity<?> getCountrySettings(@PathVariable("page") int page) {
+    public ResponseEntity<?> getBlogsByPagination(@PathVariable("page") int page) {
         try {
-            List<Blog> blogs = blogService.getBlogsByPagination(page);
+            Page<Blog> blogs = blogService.getBlogsByPagination(page);
             return new ResponseEntity<>(blogs, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Error in getting all blogs", e);
@@ -52,7 +57,7 @@ public class BlogController {
     }
 
     @DeleteMapping("/deleteBlog/{blogId}")
-    public ResponseEntity<String> deleteEmployee(@PathVariable("blogId") Long blogId) {
+    public ResponseEntity<String> deleteBlog(@PathVariable("blogId") Long blogId) {
         try {
             BlogResponse blogResponse = blogService.deleteBlog(blogId);
             return new ResponseEntity<>(blogResponse.getMessage(), blogResponse.getHttpStatus());
